@@ -1,0 +1,13 @@
+isEmpty
+displayAll
+addRear 1
+addRear 2
+addRear 3
+displayAll
+deleteFront
+deleteFront
+displayAll
+isEmpty
+deleteFront
+isEmpty
+

@@ -1,0 +1,217 @@
+
+/*--------------------------------------------------------------------------------
+ * Author:       Ian Kane
+ * Date:         October 24, 2014
+ * Updated:      Dec 10, 2014
+ * Compiler:     g++ 4.7
+ * File Type:    header file (bintree.h)
+ * Purpose:      implement binary search tree
+ --------------------------------------------------------------------------------*/
+#ifndef AVL_H
+#define AVL_H
+
+#include <iostream>
+#include <cstdlib> // abs()
+#include <cmath>   // pow()
+#include <queue>   // queue
+#include <iomanip> // setw
+using namespace std;
+
+template<typename T>
+class Vertex {
+public:
+	T elem;
+	int height;
+	Vertex<T>* left;
+	Vertex<T>* right;
+public:
+	Vertex(const T&);
+};   
+
+template<typename T>
+class AVL {
+
+public:
+
+	static AVL<T>* createAVL(const T list[], int n);
+	static Vertex<T>* createFromArray(const T list[], int min, int max);
+	bool subTree(Vertex<T>* main, Vertex<T>* sub_tree);
+	bool containsSubTree(AVL<T>*&);
+	
+	AVL();
+	~AVL();  // destructor calls dtraverse to destroy the dynamic tree
+
+	// get root's value
+	T getRoot();
+
+	/**
+	 * Purpose: display elements using in-order traversal from the root
+	 */
+	void showInOrder();      
+
+	/**
+	 * Purpose: display elements using pre-order traversal from the root
+	 * Note: same as Depth First Traversal
+	 */
+	void showPreOrder();
+
+	/**
+	 * Purpose: insert new element into tree
+	 * @param: const T& - element to be inserted
+	 */
+	void insert(const T&);
+
+	/**
+	 * Purpose: deletes the vertex that has E as it's element.
+	 * @param: const T& - element to be removed
+	 * @return: true if E was found and deleted, else false
+	 * Note: calls remove and findmax (see below)
+	 */
+	bool delete(const T&);
+
+protected: // utility functions follow - these are not for the clients to use
+	// These were created to implement the public methods
+
+	/**
+	 * Purpose: recursively perform pre-order traversal starting from given tree vertex
+	 * @param: Vertex* V - vertex to begin traversing from
+	 */
+	void PREorderTraversal(Vertex<T>* V);
+
+	/**
+	 * Purpose: recursively perform in-order traversal starting from given tree vertex
+	 * @param: Vertex* V - vertex to begin traversing from
+	 */
+	void INorderTraversal(Vertex<T>* V);
+
+	/**
+	 * Purpose: delete all vertices in the tree, traverse in post-order
+	 * @param: Vertex* V - pointer to root vertex of the tree to destroy
+	 */
+	void dtraverse(Vertex<T>* V);
+
+	/**
+	 * Purpose: removes vertex from tree
+	 * @param: Vertex* V - pointer to vertex to be deleted
+	 * @param: Vertex* P - pointer to V's parent
+	 */
+	void remove(Vertex<T>* V, Vertex<T>* P);
+	
+	/*
+	 * Purpose: find, delete, and return max element of a given tree's left sub-tree
+	 * @param: Vertex* V - root node of given tree
+	 */
+	T findMax(Vertex<T>* V);
+
+	// left sub-tree of the vertex and also deletes it
+	int treeHeight(Vertex<T>* V);
+	int treeBalanced(Vertex<T>* V);
+	int treeCount(Vertex<T>* V);
+
+	void recursiveInsert(Vertex<T>*& head, const T& elem);
+
+private:
+	Vertex<T>* root;  // pointer to the root vertex
+	Vertex<T>* last_non_zero_balance;
+	int _count;
+
+};
+
+template <typename T>
+Vertex<T>::Vertex(const T& E) : left(NULL), right(NULL), elem(E), height(0) {}
+
+/**
+ * Purpose: default constructor
+ */
+template<typename T>
+AVL<T>::AVL() {
+	root = NULL;   // This is an empty tree
+	_count = 0;
+}
+
+/**
+ * Purpose: destructor, delete all heap memory used
+ */
+template<typename T>
+AVL<T>::~AVL() {
+	dtraverse(root); // traverse to delete all vertices in post order
+	root = NULL;     // make sure root is NULL  
+}
+
+/**
+ * Purpose: delete all vertices in the tree, traverse in post-order
+ * @param: Vertex* V - pointer to root vertex of the tree to destroy
+ */
+template<typename T>
+void AVL<T>::dtraverse(Vertex<T>* V) {
+	if (V != NULL) {
+		dtraverse(V->left);        // visit left sub tree of V
+		dtraverse(V->right);       // visit right sub tree of V
+		delete V;                  // delete V
+	}
+}
+
+template<typename T>
+int AVL<T>::count() {
+	return _count;
+}
+
+template <typename T>
+void AVL<T>::insert(Vertex<T>*& head, const T& elem) {
+	
+	if (head == NULL) {
+		head = new typename Vertex<T>::Vertex(elem);
+	} else if (elem < head->elem) {
+		cout << "Going left of " << head->elem << endl;
+		insert(head->left, elem);
+	} else {
+		cout << "Going right of " << head->elem << endl;
+		insert(head->right, elem);
+	}
+	
+	head->height = max(height(head->left), height(head->right)) + 1;
+
+	if (getBalance(head) == 2) {
+		if (getBalance(head->right) == -1) { 
+			rotateRight(head->right);
+		}
+		rotateLeft(head);
+	} else if (getBalance(head) == -2) {
+		if (getBalance(head->left) == 1) {
+			rotateLeft(head->left);
+		}
+		rotateRight(head);
+	}
+}
+
+template <typename T>
+int AVL<T>::height(const Vertex<T>* head) {
+	return (head == NULL) ? 0 : head->height;
+}
+
+template <typename T>
+int AVL<T>::getBalance(Vertex<T>*& V) {
+	return height(V->right) - height(V->lreft);
+}
+
+/**
+ * Purpose: display elements using in-order traversal from the root
+ */
+template<typename T>
+void AVL<T>::ShowInOrder() {
+	cout << "elements in the IN order: " << endl;
+	INorderTraversal(root);  // start in-order traversal from the root
+}
+
+/**
+ * Purpose: recursively perform in-order traversal starting from given tree vertex
+ * @param: Vertex* V - vertex to begin traversing from
+ */
+template<typename T>
+void AVL<T>::INorderTraversal(Vertex<T>* V) {
+	if (V != NULL) {
+		INorderTraversal(V->left);
+		cout << V->elem << endl;
+		INorderTraversal(V->right);
+	}
+}

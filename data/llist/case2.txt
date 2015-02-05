@@ -1,0 +1,21 @@
+addFront 5
+addFront 4
+deleteFront
+addRear 6
+addRear 8
+addRear 9
+displayAll
+addBeforeI 1 4
+addBeforeI 4 7
+addBeforeI 7 10
+addBeforeI 9 12
+addBeforeI 0 0
+displayAll
+deleteI 1
+deleteI 6
+deleteI 3
+deleteI 5
+deleteI 0
+displayAll
+deleteAllFromRear
+displayAll

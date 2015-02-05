@@ -1,0 +1,11 @@
+addFront 4
+addRear 6
+addRear 7
+addRear 8
+displayAll
+search 6
+searchAndReplace 6 0
+search 8
+searchAndReplace 8 2
+displayAll
+search 5

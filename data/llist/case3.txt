@@ -1,0 +1,2 @@
+addBeforeI 0 7
+deleteFront
